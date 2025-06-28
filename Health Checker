@@ -1,0 +1,59 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+local LocalPlayer = Players.LocalPlayer
+local mouse = LocalPlayer:GetMouse()
+
+local qHeld = false
+local disabled = false
+
+local function formatWithCommas(n)
+    local formatted = tostring(math.floor(n))
+    while true do
+        formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1,%2")
+        if k == 0 then break end
+    end
+    return formatted
+end
+
+local function notifyHealth(name, hp)
+    StarterGui:SetCore("SendNotification", {
+        Title = name .. "'s Health",
+        Text = "HP: " .. formatWithCommas(hp),
+        Duration = 1
+    })
+end
+
+local function getHumanoid(model)
+    if not model then return nil end
+    return model:FindFirstChildWhichIsA("Humanoid")
+end
+
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.F then
+        qHeld = true
+    elseif input.KeyCode == Enum.KeyCode.P then
+        disabled = true
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.F then
+        qHeld = false
+    end
+end)
+
+mouse.Button1Down:Connect(function()
+    if disabled or not qHeld then return end
+
+    local target = mouse.Target
+    if not target then return end
+
+    local model = target:FindFirstAncestorOfClass("Model")
+    local humanoid = getHumanoid(model)
+    if not model or not humanoid then return end
+
+    notifyHealth(model.Name, humanoid.Health)
+end)
