@@ -1,0 +1,32 @@
+-- Use weapons on vanta
+_G.Vanta = true
+
+local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+
+local trackedNPCs = {}
+local lastHealth = {}
+
+RunService.Heartbeat:Connect(function()
+    if not _G.Vanta then return end
+
+    local npc = workspace:FindFirstChild("Vanta")
+    if npc then
+        local humanoid = npc:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            local currentHealth = humanoid.Health
+            local previousHealth = lastHealth[npc] or currentHealth
+
+            if currentHealth < previousHealth then
+                local damage = math.floor(previousHealth - currentHealth)
+                StarterGui:SetCore("SendNotification", {
+                    Title = npc.Name .. " Damage",
+                    Text = "Damage dealt: " .. damage,
+                    Duration = 2
+                })
+            end
+
+            lastHealth[npc] = currentHealth
+        end
+    end
+end)
