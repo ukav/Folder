@@ -1,0 +1,190 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local toggle = false
+
+local targetNames = {
+    ["Dweller"] = true,
+    ["Pale"] = true,
+    ["Lurker"] = true,
+    ["Rakul"] = true,
+    ["Zombie"] = true,
+    ["Sonic.EXE"] = true,
+    ["Prisoner Zombie"] = true,
+    ["Soldier Zombie"] = true,
+    ["Eyeless Jack"] = true,
+    ["Jeff the Killer"] = true,
+    ["Grue"] = true,
+    ["Friend"] = true,
+    ["Hydra"] = true,
+    ["Slenderman"] = true,
+    ["Golem"] = true,
+    ["Rager"] = true,
+    ["Frosted"] = true,
+    ["Jack O' Lantern"] = true,
+    ["Reaper"] = true,
+    ["Zombie Brute"] = true,
+    ["The Expressionless"] = true,
+    ["Drold"] = true,
+    ["Guardian"] = true,
+    ["Mega Guardian"] = true,
+    ["Blaze"] = true,
+    ["Serpent"] = true,
+    ["Sentry"] = true,
+    ["Cyborg"] = true,
+    ["M.I.C"] = true,
+    ["M.O.C"] = true,
+    ["Snowman"] = true,
+    ["Jengu"] = true,
+    ["Skeleton"] = true,
+    ["Ice Skeleton"] = true,
+    ["Glacier"] = true,
+    ["Flamas"] = true,
+    ["Evoker"] = true,
+    ["Toxicle"] = true,
+    ["004"] = true,
+    ["Jengu"] = true,
+    ["Nightmare"] = true,
+    ["Mannequin"] = true,
+    ["Coal"] = true,
+    ["Iron"] = true,
+    ["Gold"] = true,
+    ["Diamond"] = true,
+}
+
+local wantedGuns = {
+    ["Screamer"] = true
+}
+
+local function getGuns()
+    local guns = {}
+    local char = LocalPlayer.Character
+    local backpack = LocalPlayer.Backpack
+
+    local function checkAndAdd(item)
+        if item:IsA("Tool") and wantedGuns[item.Name] and item:FindFirstChild("GunScript_Server") then
+            table.insert(guns, item)
+        end
+    end
+
+    if char then
+        for _, item in pairs(char:GetChildren()) do
+            checkAndAdd(item)
+        end
+    end
+    if backpack then
+        for _, item in pairs(backpack:GetChildren()) do
+            checkAndAdd(item)
+        end
+    end
+
+    return guns
+end
+
+local function isValidNPC(model)
+    if not model:IsA("Model") then return false end
+    if not targetNames[model.Name] then return false end
+    if Players:GetPlayerFromCharacter(model) then return false end
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    local torso = model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Torso")
+    if not humanoid or not torso then return false end
+    return true
+end
+
+local function attackNPCs()
+    while true do
+        if toggle then
+            local char = LocalPlayer.Character
+            local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if not char or not hrp or not humanoid or humanoid.Health <= 0 then
+                task.wait(0.5)
+                continue
+            end
+
+            local guns = getGuns()
+            if #guns > 0 then
+                for _, npc in ipairs(workspace:GetChildren()) do
+                    if isValidNPC(npc) then
+                        local humanoidNPC = npc:FindFirstChildOfClass("Humanoid")
+                        local torso = npc:FindFirstChild("HumanoidRootPart") or npc:FindFirstChild("Torso")
+                        if humanoidNPC and torso and humanoidNPC.Health > 0 then
+                            for _, gun in ipairs(guns) do
+                                local remote = gun.GunScript_Server and gun.GunScript_Server:FindFirstChild("InflictTarget")
+                                if remote then
+                                    pcall(function()
+                                        if humanoidNPC.Health > 0 then
+                                            remote:FireServer("Head", humanoidNPC, torso, gun, Vector3.new())
+                                        end
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        task.wait(0.01)
+    end
+end
+
+coroutine.wrap(attackNPCs)()
+
+-- GUI --
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "NPCNukerGui"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
+
+local Frame = Instance.new("Frame")
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(42, 42, 42)
+Frame.BorderSizePixel = 0
+Frame.Position = UDim2.new(1, -173, 0, 50)
+Frame.Size = UDim2.new(0, 163, 0, 82)
+Frame.Active = true
+Frame.Draggable = true
+
+local TextLabel = Instance.new("TextLabel")
+TextLabel.Name = "Title"
+TextLabel.Parent = Frame
+TextLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+TextLabel.BorderSizePixel = 0
+TextLabel.Size = UDim2.new(0, 140, 0, 23)
+TextLabel.Font = Enum.Font.SourceSansBold
+TextLabel.Text = "NPC Autofarmer"
+TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextLabel.TextSize = 18
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = Frame
+CloseButton.Size = UDim2.new(0, 23, 0, 23)
+CloseButton.Position = UDim2.new(1, -23, 0, 0)
+CloseButton.BackgroundTransparency = 1
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.SourceSansBold
+CloseButton.TextSize = 18
+CloseButton.AutoButtonColor = true
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+    toggle = false
+end)
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Parent = Frame
+ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.BorderSizePixel = 0
+ToggleButton.Position = UDim2.new(0.175, 0, 0.4, 0)
+ToggleButton.Size = UDim2.new(0, 104, 0, 31)
+ToggleButton.Font = Enum.Font.SourceSansItalic
+ToggleButton.Text = "OFF"
+ToggleButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+ToggleButton.TextSize = 15
+
+ToggleButton.MouseButton1Click:Connect(function()
+    toggle = not toggle
+    ToggleButton.Text = toggle and "ON" or "OFF"
+end)
