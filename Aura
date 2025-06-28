@@ -1,0 +1,155 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+local toggle = false
+local radius = 25
+
+local wantedGuns = {
+    ["Gun_Gun"] = true
+}
+
+local zones = {"Castle", "DeadGround", "CorruptedZone", "NightCity", "MIS"}
+
+local function getGuns()
+    local guns, char, bp = {}, LocalPlayer.Character, LocalPlayer.Backpack
+    for _, item in ipairs(char:GetChildren()) do
+        if item:IsA("Tool") and wantedGuns[item.Name] and item:FindFirstChild("GunScript_Server") then
+            guns[#guns+1] = item
+        end
+    end
+    for _, item in ipairs(bp:GetChildren()) do
+        if item:IsA("Tool") and wantedGuns[item.Name] and item:FindFirstChild("GunScript_Server") then
+            guns[#guns+1] = item
+        end
+    end
+    return guns
+end
+
+local function valid(npc, char, hrp)
+    if not npc:IsA("Model") then return false end
+    if Players:GetPlayerFromCharacter(npc) then return false end
+    local hum = npc:FindFirstChildWhichIsA("Humanoid")
+    local root = npc:FindFirstChild("HumanoidRootPart") or npc:FindFirstChild("Torso")
+    if not hum or not root or hum.Health <= 0 then return false end
+    if not hrp then return false end
+    return (root.Position - hrp.Position).Magnitude <= radius
+end
+
+local function attackAll()
+    while true do
+        if toggle then
+            local char = LocalPlayer.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if not char or not hrp or not hum or hum.Health <= 0 then task.wait(0.3) continue end
+
+            local guns = getGuns()
+            if #guns == 0 then task.wait(0.3) continue end
+
+            local function blast(npc)
+                local targetHum = npc:FindFirstChildOfClass("Humanoid")
+                local root = npc:FindFirstChild("HumanoidRootPart") or npc:FindFirstChild("Torso")
+                if not targetHum or not root then return end
+                for _, gun in ipairs(guns) do
+                    local remote = gun:FindFirstChild("GunScript_Server") and gun.GunScript_Server:FindFirstChild("InflictTarget")
+                    if remote then
+                        for _ = 1, 4 do
+                            pcall(function()
+                                remote:FireServer("Head", targetHum, root, gun, Vector3.zero)
+                            end)
+                        end
+                    end
+                end
+            end
+
+            for _, zoneName in ipairs(zones) do
+                local zone = workspace:FindFirstChild(zoneName)
+                if zone then
+                    for _, npc in ipairs(zone:GetChildren()) do
+                        if valid(npc, char, hrp) then
+                            task.spawn(blast, npc)
+                        end
+                    end
+                end
+            end
+
+            for _, npc in ipairs(workspace:GetChildren()) do
+                if valid(npc, char, hrp) then
+                    task.spawn(blast, npc)
+                end
+            end
+        end
+        task.wait(0.05)
+    end
+end
+
+task.spawn(attackAll)
+
+-- GUI Setup
+local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+gui.Name = "AuraGui"
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 163, 0, 82)
+frame.Position = UDim2.new(1, -173, 0, 50)
+frame.BackgroundColor3 = Color3.fromRGB(42, 42, 42)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(0, 140, 0, 23)
+title.Text = "Aura: Universal"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextSize = 18
+title.Font = Enum.Font.SourceSansBold
+title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+title.BorderSizePixel = 0
+
+local close = Instance.new("TextButton", frame)
+close.Position = UDim2.new(1, -23, 0, 0)
+close.Size = UDim2.new(0, 23, 0, 23)
+close.Text = "X"
+close.TextColor3 = Color3.new(1, 1, 1)
+close.Font = Enum.Font.SourceSansBold
+close.TextSize = 18
+close.BackgroundTransparency = 1
+close.MouseButton1Click:Connect(function()
+    gui:Destroy()
+    toggle = false
+end)
+
+local toggleBtn = Instance.new("TextButton", frame)
+toggleBtn.Position = UDim2.new(0.175, 0, 0.4, 0)
+toggleBtn.Size = UDim2.new(0, 104, 0, 31)
+toggleBtn.Text = "OFF"
+toggleBtn.TextColor3 = Color3.new(0, 0, 0)
+toggleBtn.Font = Enum.Font.SourceSansItalic
+toggleBtn.TextSize = 15
+toggleBtn.BackgroundColor3 = Color3.new(1, 1, 1)
+toggleBtn.MouseButton1Click:Connect(function()
+    toggle = not toggle
+    toggleBtn.Text = toggle and "ON" or "OFF"
+end)
+
+local radiusBox = Instance.new("TextBox", frame)
+radiusBox.Position = UDim2.new(0, 52, 0.8, 0)
+radiusBox.Size = UDim2.new(0, 52, 0, 12)
+radiusBox.Text = tostring(radius)
+radiusBox.PlaceholderText = "Radius"
+radiusBox.TextColor3 = Color3.new(0, 0, 0)
+radiusBox.BackgroundColor3 = Color3.new(1, 1, 1)
+radiusBox.BorderSizePixel = 0
+radiusBox.TextSize = 14
+radiusBox.Font = Enum.Font.SourceSansItalic
+radiusBox.ClearTextOnFocus = false
+
+radiusBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local num = tonumber(radiusBox.Text)
+    if num and num > 0 then
+        radius = num
+    end
+end)
