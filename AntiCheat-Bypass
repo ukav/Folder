@@ -4,6 +4,8 @@ local player = Players.LocalPlayer
 
 local guiClosed = false
 local guiInstance
+local minimized = false
+local guiPosition = UDim2.new(0, 100, 0, 100) -- remember position
 
 local function tweenPositions()
 	local char = player.Character or player.CharacterAdded:Wait()
@@ -25,7 +27,7 @@ local function tweenPositions()
 	staticPlatform.Position = tweenTargets[2] + Vector3.new(0, -3.5, 0)
 	staticPlatform.Parent = workspace
 
-	humanoid.WalkSpeed = 30
+	humanoid.WalkSpeed = 50
 	root.CFrame = CFrame.new(tweenTargets[1])
 
 	local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Linear)
@@ -52,12 +54,18 @@ local function createGui()
 
 	local frame = Instance.new("Frame")
 	frame.Size = UDim2.new(0, 300, 0, 150)
-	frame.Position = UDim2.new(0, 100, 0, 100)
+	frame.Position = guiPosition
 	frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 	frame.BorderSizePixel = 0
 	frame.Active = true
 	frame.Draggable = true
 	frame.Parent = gui
+
+	-- Update guiPosition on drag end
+	frame.Draggable = true
+	frame:GetPropertyChangedSignal("Position"):Connect(function()
+		guiPosition = frame.Position
+	end)
 
 	local stroke = Instance.new("UIStroke")
 	stroke.Thickness = 2
@@ -131,8 +139,16 @@ local function createGui()
 		tweenPositions()
 	end)
 
-	local minimized = false
-	local fullSize = frame.Size
+	-- Apply minimize state on GUI create
+	if minimized then
+		frame.Size = UDim2.new(0, 150, 0, 24)
+		button.Visible = false
+		title.Visible = false
+	else
+		frame.Size = UDim2.new(0, 300, 0, 150)
+		button.Visible = true
+		title.Visible = true
+	end
 
 	minimizeBtn.MouseButton1Click:Connect(function()
 		minimized = not minimized
@@ -141,7 +157,7 @@ local function createGui()
 			button.Visible = false
 			title.Visible = false
 		else
-			frame.Size = fullSize
+			frame.Size = UDim2.new(0, 300, 0, 150)
 			button.Visible = true
 			title.Visible = true
 		end
