@@ -1,0 +1,199 @@
+local running = true
+
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+local alertGui = Instance.new("ScreenGui")
+alertGui.Name = "CustomNotificationGui"
+alertGui.ResetOnSpawn = false
+alertGui.Parent = game.CoreGui
+
+local notifSize = UDim2.new(0, 250, 0, 60)
+local margin = 10
+
+local notifications = {}
+
+local function formatNumber(num)
+	local str = tostring(math.floor(num))
+	local result = ""
+	while #str > 3 do
+		result = "," .. str:sub(-3) .. result
+		str = str:sub(1, -4)
+	end
+	return str .. result
+end
+
+local function createNotification()
+	local frame = Instance.new("Frame")
+	frame.Size = notifSize
+	frame.Position = UDim2.new(1, 10, 1, -80)
+	frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	frame.BackgroundTransparency = 0.5
+	frame.BorderSizePixel = 0
+	frame.AnchorPoint = Vector2.new(1, 1)
+	frame.Visible = false
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 6)
+	corner.Parent = frame
+
+	local titleLabel = Instance.new("TextLabel")
+	titleLabel.Size = UDim2.new(1, -20, 0, 25)
+	titleLabel.Position = UDim2.new(0, 10, 0, 5)
+	titleLabel.BackgroundTransparency = 1
+	titleLabel.Font = Enum.Font.SourceSansBold
+	titleLabel.TextSize = 20
+	titleLabel.TextColor3 = Color3.new(1,1,1)
+	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+	titleLabel.Text = "Alert Title"
+	titleLabel.Parent = frame
+
+	local textLabel = Instance.new("TextLabel")
+	textLabel.Size = UDim2.new(1, -20, 0, 25)
+	textLabel.Position = UDim2.new(0, 10, 0, 30)
+	textLabel.BackgroundTransparency = 1
+	textLabel.Font = Enum.Font.SourceSans
+	textLabel.TextSize = 16
+	textLabel.TextColor3 = Color3.new(1,1,1)
+	textLabel.TextXAlignment = Enum.TextXAlignment.Left
+	textLabel.Text = "Alert Text"
+	textLabel.Parent = frame
+
+	frame.Parent = alertGui
+
+	return {
+		Frame = frame,
+		Title = titleLabel,
+		Text = textLabel,
+		Visible = false,
+		Timer = 0,
+		TweenIn = nil,
+		TweenOut = nil,
+	}
+end
+
+local function repositionNotifications()
+	for i = #notifications, 1, -1 do
+		local notif = notifications[i]
+		local targetPos = UDim2.new(1, -10, 1, -margin - (notifSize.Y.Offset + margin) * (#notifications - i))
+		notif.TweenIn = TweenService:Create(notif.Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = targetPos})
+		notif.TweenIn:Play()
+	end
+end
+
+local function showNotification(id, title, text)
+	for _, n in ipairs(notifications) do
+		if n.Id == id then
+			n.Text.Text = text
+			return n
+		end
+	end
+
+	local notif = createNotification()
+	notif.Id = id
+	table.insert(notifications, 1, notif)
+	notif.Frame.Visible = true
+	notif.Title.Text = title
+	notif.Text.Text = text
+	notif.Timer = 0
+	repositionNotifications()
+	return notif
+end
+
+local function hideNotification(notif)
+	notif.Visible = false
+	if notif.TweenIn then notif.TweenIn:Cancel() end
+	notif.TweenOut = TweenService:Create(notif.Frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1, 10, 1, -80)})
+	notif.TweenOut:Play()
+	notif.TweenOut.Completed:Connect(function()
+		notif.Frame.Visible = false
+		for i,n in ipairs(notifications) do
+			if n == notif then
+				table.remove(notifications, i)
+				break
+			end
+		end
+		repositionNotifications()
+	end)
+end
+
+local espBoxes = {}
+
+local function clearESP()
+	for _, box in ipairs(espBoxes) do
+		if box and box.Parent then
+			box:Destroy()
+		end
+	end
+	table.clear(espBoxes)
+end
+
+local function makeESPModel(char)
+	for _, part in ipairs(char:GetDescendants()) do
+		if part:IsA("BasePart") then
+			local box = Instance.new("BoxHandleAdornment")
+			box.Adornee = part
+			box.AlwaysOnTop = true
+			box.ZIndex = 5
+			box.Size = part.Size
+			box.Transparency = 0.7
+			box.Color3 = Color3.new(1,1,1)
+			box.Name = "ESP_Box"
+			box.Parent = part
+			table.insert(espBoxes, box)
+		end
+	end
+end
+
+local trackedNPCs = {}
+
+RunService.Heartbeat:Connect(function(dt)
+	if not running then return end
+
+	clearESP()
+	for npc, data in pairs(trackedNPCs) do
+		if not npc.Parent then
+			hideNotification(data.notif)
+			trackedNPCs[npc] = nil
+		else
+			local humanoid = npc:FindFirstChildOfClass("Humanoid")
+			if humanoid then
+				makeESPModel(npc)
+				if data.notif then
+					if humanoid.Health <= 0 then
+						if data.state ~= "dead" then
+							data.notif.Text.Text = "Status: Dead"
+							data.timer = 2
+							data.state = "dead"
+						else
+							data.timer = data.timer - dt
+							if data.timer <= 0 then
+								hideNotification(data.notif)
+								trackedNPCs[npc] = nil
+							end
+						end
+					else
+						data.notif.Text.Text = "Alive (Health: " .. formatNumber(humanoid.Health) .. ")"
+						data.state = "alive"
+					end
+				end
+			end
+		end
+	end
+
+	local npcs = {
+		"Reaper",
+		"Jack O' Lantern",
+		"Zombie Brute",
+	}
+
+	for _, name in ipairs(npcs) do
+		for _, npc in ipairs(workspace:GetChildren()) do
+			if npc.Name == name and not trackedNPCs[npc] then
+				local humanoid = npc:FindFirstChildOfClass("Humanoid")
+				local notif = showNotification(npc.Name .. tostring(npc:GetDebugId()), npc.Name .. " Alert", humanoid and humanoid.Health > 0 and "Alive (Health: " .. formatNumber(humanoid.Health) .. ")" or "Status: Dead")
+				trackedNPCs[npc] = {notif = notif, state = humanoid and humanoid.Health > 0 and "alive" or "dead", timer = 2}
+			end
+		end
+	end
+end)
