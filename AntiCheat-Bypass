@@ -5,12 +5,11 @@ local player = Players.LocalPlayer
 local guiClosed = false
 local guiInstance
 local minimized = false
-local guiPosition = UDim2.new(0, 100, 0, 100) -- remember position
+local guiPosition = UDim2.new(0, 100, 0, 100)
 
 local function tweenPositions()
 	local char = player.Character or player.CharacterAdded:Wait()
 	local root = char:WaitForChild("HumanoidRootPart")
-	local humanoid = char:WaitForChild("Humanoid")
 	local originalCF = root.CFrame
 
 	local tweenTargets = {
@@ -27,7 +26,6 @@ local function tweenPositions()
 	staticPlatform.Position = tweenTargets[2] + Vector3.new(0, -3.5, 0)
 	staticPlatform.Parent = workspace
 
-	humanoid.WalkSpeed = 50
 	root.CFrame = CFrame.new(tweenTargets[1])
 
 	local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Linear)
@@ -40,7 +38,6 @@ local function tweenPositions()
 	end
 
 	staticPlatform:Destroy()
-	humanoid.WalkSpeed = 16
 	root.CFrame = originalCF
 end
 
@@ -61,8 +58,6 @@ local function createGui()
 	frame.Draggable = true
 	frame.Parent = gui
 
-	-- Update guiPosition on drag end
-	frame.Draggable = true
 	frame:GetPropertyChangedSignal("Position"):Connect(function()
 		guiPosition = frame.Position
 	end)
@@ -139,7 +134,6 @@ local function createGui()
 		tweenPositions()
 	end)
 
-	-- Apply minimize state on GUI create
 	if minimized then
 		frame.Size = UDim2.new(0, 150, 0, 24)
 		button.Visible = false
@@ -177,7 +171,6 @@ local function onCharacterAdded(char)
 		guiInstance:Destroy()
 		guiInstance = nil
 	end
-	wait(0)
 	guiInstance = createGui()
 end
 
