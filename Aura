@@ -3,7 +3,7 @@ local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
 local toggle = false
-local radius = 25
+local radius = 15
 
 local wantedGuns = {
     ["Gun_Gun"] = true
