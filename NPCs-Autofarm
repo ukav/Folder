@@ -49,7 +49,7 @@ local targetNames = {
     ["Coal"] = true,
     ["Iron"] = true,
     ["Gold"] = true,
-    ["Diamond"] = true,
+    ["Diamond"] = true
 }
 
 local wantedGuns = {
