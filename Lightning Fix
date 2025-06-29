@@ -1,0 +1,32 @@
+local Lighting = game:GetService("Lighting")
+local Camera = workspace.CurrentCamera
+
+-- Nukes all visual effects
+local function hardResetVisuals()
+    -- Kill Camera effects
+    for _, v in pairs(Camera:GetChildren()) do
+        if v:IsA("ColorCorrectionEffect") or v:IsA("BlurEffect") or v:IsA("BloomEffect") then
+            v:Destroy()
+        end
+    end
+
+    -- Kill Lighting effects
+    for _, v in pairs(Lighting:GetChildren()) do
+        if v:IsA("ColorCorrectionEffect") or v:IsA("BlurEffect") or v:IsA("BloomEffect") or v:IsA("SunRaysEffect") or v:IsA("DepthOfFieldEffect") then
+            v:Destroy()
+        end
+    end
+
+    -- Restore Lighting defaults
+    Lighting.Brightness = 2
+    Lighting.ClockTime = 14
+    Lighting.FogEnd = 100000
+    Lighting.FogStart = 0
+    Lighting.OutdoorAmbient = Color3.new(0.5, 0.5, 0.5)
+    Lighting.Ambient = Color3.new(0.5, 0.5, 0.5)
+
+    -- Reset Camera type just in case
+    Camera.CameraType = Enum.CameraType.Custom
+end
+
+hardResetVisuals()
