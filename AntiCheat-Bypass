@@ -1,5 +1,4 @@
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 
 local guiClosed = false
@@ -12,32 +11,16 @@ local function tweenPositions()
 	local root = char:WaitForChild("HumanoidRootPart")
 	local originalCF = root.CFrame
 
-	local tweenTargets = {
-		Vector3.new(624, 1090, 750.5),
-		Vector3.new(624, 1025, 750.5)
-	}
+	local targetPos = Vector3.new(624, 1090, 750.5)
 
-	local staticPlatform = Instance.new("Part")
-	staticPlatform.Size = Vector3.new(2, 1, 2)
-	staticPlatform.Anchored = true
-	staticPlatform.CanCollide = true
-	staticPlatform.Transparency = 0.3
-	staticPlatform.Name = "AntiFallPlatform"
-	staticPlatform.Position = tweenTargets[2] + Vector3.new(0, -3.5, 0)
-	staticPlatform.Parent = workspace
+	local oldGravity = workspace.Gravity
+	workspace.Gravity = 240
 
-	root.CFrame = CFrame.new(tweenTargets[1])
+	root.CFrame = CFrame.new(targetPos + Vector3.new(0, 10, 0))
 
-	local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Linear)
+	task.wait(1)
 
-	for i = 1, 3 do
-		local target = tweenTargets[(i % 2) + 1]
-		local tween = TweenService:Create(root, tweenInfo, {CFrame = CFrame.new(target)})
-		tween:Play()
-		tween.Completed:Wait()
-	end
-
-	staticPlatform:Destroy()
+	workspace.Gravity = oldGravity
 	root.CFrame = originalCF
 end
 
