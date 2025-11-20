@@ -13,8 +13,8 @@ local function tweenPositions()
 	local originalCF = root.CFrame
 
 	local tweenTargets = {
-		Vector3.new(624, 1156, 750),
-		Vector3.new(624, 1134, 750)
+		Vector3.new(68, 3, 64),
+		Vector3.new(68, -2, 64)
 	}
 
 	local staticPlatform = Instance.new("Part")
