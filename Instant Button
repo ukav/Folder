@@ -1,51 +1,12 @@
-local UIS = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
-local function getNearestPrompt(root)
-	local nearest, shortest = nil, math.huge
-	for _, v in pairs(workspace:GetDescendants()) do
-		if v:IsA("ProximityPrompt") and v.Enabled then
-			local part = v.Parent:IsA("BasePart") and v.Parent or nil
-			if part then
-				local dist = (root.Position - part.Position).Magnitude
-				if dist < v.MaxActivationDistance and dist < shortest then
-					shortest = dist
-					nearest = v
-				end
-			end
-		end
-	end
-	return nearest
+for _, v in ipairs(workspace:GetDescendants()) do
+    if v:IsA("ProximityPrompt") then
+        v.HoldDuration = 0
+    end
 end
 
-local connection
-local function bindControls()
-	if connection then connection:Disconnect() end
-	connection = UIS.InputBegan:Connect(function(input, gpe)
-		if gpe then return end
-		local char = player.Character
-		if not char then return end
-		local root = char:FindFirstChild("HumanoidRootPart")
-		if not root then return end
-
-		if input.KeyCode == Enum.KeyCode.F then
-			local prompt = getNearestPrompt(root)
-			if prompt then
-				fireproximityprompt(prompt)
-			end
-		elseif input.KeyCode == Enum.KeyCode.L then
-			connection:Disconnect()
-		end
-	end)
-end
-
-player.CharacterAdded:Connect(function()
-	task.wait(1)
-	bindControls()
+-- also catch new prompts that appear later
+workspace.DescendantAdded:Connect(function(v)
+    if v:IsA("ProximityPrompt") then
+        v.HoldDuration = 0
+    end
 end)
-
--- Initial bind
-if player.Character then
-	bindControls()
-end
