@@ -1,0 +1,10 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local root = char:WaitForChild("HumanoidRootPart")
+
+local portal = game:GetService("Workspace"):WaitForChild("Portal"):WaitForChild("Beam")
+
+firetouchinterest(root, portal, 0)
+firetouchinterest(root, portal, 1)
