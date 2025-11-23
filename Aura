@@ -6,7 +6,7 @@ local toggle = false
 local radius = 15
 
 local wantedGuns = {
-    ["Rocket Launcher"] = true
+    ["Gun_Gun"] = true
 }
 
 local zones = {"Castle", "DeadGround", "CorruptedZone", "NightCity", "MIS"}
