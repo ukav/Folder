@@ -1,0 +1,12 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local root = char:WaitForChild("HumanoidRootPart")
+
+root.CFrame = CFrame.new(
+    -111.037651, 992.001404, 281.311829,
+    0.724185467, -5.51993651e-08, 0.689605236,
+    7.53036318e-08, 1, 9.65140523e-10,
+    -0.689605236, 5.12308382e-08, 0.724185467
+)
