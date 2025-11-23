@@ -1,0 +1,195 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local guiClosed = false
+local guiInstance
+
+-- Save these outside to keep state across respawns
+local savedPosition = UDim2.new(0, 100, 0, 100)
+local minimized = false
+
+local function createGui()
+    local char = player.Character or player.CharacterAdded:Wait()
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "Gui"
+    gui.ResetOnSpawn = false
+    gui.Parent = player:WaitForChild("PlayerGui")
+
+    local frame = Instance.new("Frame")
+    frame.Size = minimized and UDim2.new(0, 150, 0, 24) or UDim2.new(0, 320, 0, 300)
+    frame.Position = savedPosition
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BorderSizePixel = 0
+    frame.Active = true
+    frame.Draggable = true
+    frame.Parent = gui
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 2
+    stroke.Color = Color3.new(0, 0, 0)
+    stroke.Parent = frame
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = frame
+
+    local grad = Instance.new("UIGradient")
+    grad.Rotation = 90
+    grad.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    grad.Parent = frame
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -60, 0, 24)
+    title.BackgroundTransparency = 1
+    title.Text = "Survinve in Area 51 GUI"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.Font = Enum.Font.SourceSansBold
+    title.TextSize = 20
+    title.Parent = frame
+    title.Visible = not minimized
+
+    local minimizeBtn = Instance.new("TextButton")
+    minimizeBtn.Size = UDim2.new(0, 24, 0, 24)
+    minimizeBtn.Position = UDim2.new(1, -60, 0, 0)
+    minimizeBtn.Text = "_"
+    minimizeBtn.TextScaled = true
+    minimizeBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    minimizeBtn.BackgroundTransparency = 1
+    minimizeBtn.TextColor3 = Color3.new(1, 1, 1)
+    minimizeBtn.Parent = frame
+
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 24, 0, 24)
+    closeBtn.Position = UDim2.new(1, -30, 0, 0)
+    closeBtn.Text = "X"
+    closeBtn.TextScaled = true
+    closeBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    closeBtn.BackgroundTransparency = 1
+    closeBtn.TextColor3 = Color3.new(1, 1, 1)
+    closeBtn.Parent = frame
+
+    local buttonNames = {
+        "Inf Yield",
+        "Instant Button",
+        "Aura: Universal",
+        "Anti-cheat Bypasser",
+        "Lighting Fix",
+        "Damage Checker",
+        "Mimicbox Detector",
+        "NPCs Autofarm",
+        "NPCs Notifier",
+        "GUI Cracked",
+        "God mode",
+        "Reaper's Room",
+        "Jack's Room",
+        "Portal"
+    }
+
+    local buttonUrls = {
+        "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/Instant%20Button",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/Aura",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/AntiCheat-Bypass",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/Lightning%20Fix",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/Damage-Checker",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/Mimicbox%20Detector",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/NPCs-Autofarm",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/NPCs-Notifier",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/GUI",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/God%20Mode",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/Reaper'sROOM",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/Jack'sROOM",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/Portal"
+    }
+
+    local buttons = {}
+    local buttonWidth = 90
+    local buttonHeight = 40
+    local buttonSpacingX = 10
+    local buttonSpacingY = 10
+    local startX = 10
+    local startY = 50
+
+    for i = 1, #buttonNames do
+        local button = Instance.new("TextButton")
+        local col = (i - 1) % 3
+        local row = math.floor((i - 1) / 3)
+        button.Size = UDim2.new(0, buttonWidth, 0, buttonHeight)
+        button.Position = UDim2.new(0, startX + (buttonWidth + buttonSpacingX) * col, 0, startY + (buttonHeight + buttonSpacingY) * row)
+        button.Text = buttonNames[i]
+        button.TextScaled = true
+        button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        button.BackgroundTransparency = 1
+        button.TextColor3 = Color3.new(1, 1, 1)
+        button.Font = Enum.Font.SourceSansBold
+
+        local buttonStroke = Instance.new("UIStroke")
+        local buttonCorner = Instance.new("UICorner")
+        buttonCorner.CornerRadius = UDim.new(0, 8)
+        buttonCorner.Parent = button
+        buttonStroke.Thickness = 2
+        buttonStroke.Color = Color3.new(0, 0, 0)
+        buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        buttonStroke.Parent = button
+
+        button.Parent = frame
+        buttons[i] = button
+        button.Visible = not minimized
+    end
+
+    for i, btn in pairs(buttons) do
+        btn.MouseButton1Click:Connect(function()
+            pcall(function()
+                loadstring(game:HttpGet(buttonUrls[i], true))()
+            end)
+        end)
+    end
+
+    minimizeBtn.MouseButton1Click:Connect(function()
+        minimized = not minimized
+        if minimized then
+            savedPosition = frame.Position
+            frame.Size = UDim2.new(0, 150, 0, 24)
+            for _, btn in pairs(buttons) do
+                btn.Visible = false
+            end
+            title.Visible = false
+        else
+            frame.Size = UDim2.new(0, 320, 0, 250)
+            for _, btn in pairs(buttons) do
+                btn.Visible = true
+            end
+            title.Visible = true
+        end
+    end)
+
+    frame:GetPropertyChangedSignal("Position"):Connect(function()
+        savedPosition = frame.Position
+    end)
+
+    closeBtn.MouseButton1Click:Connect(function()
+        guiClosed = true
+        gui:Destroy()
+    end)
+
+    return gui
+end
+
+local function onCharacterAdded(char)
+    if guiClosed then return end
+    if guiInstance then
+        guiInstance:Destroy()
+        guiInstance = nil
+    end
+    wait(0)
+    guiInstance = createGui()
+end
+
+if player.Character then
+    onCharacterAdded(player.Character)
+end
+player.CharacterAdded:Connect(onCharacterAdded)
