@@ -143,6 +143,48 @@ local Button = Tab:CreateButton({
     end,
 })
 
+local Button = Tab:CreateButton({
+    Name = "Go to Crafting Room",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local root = char:WaitForChild("HumanoidRootPart")
+        local targetPart = workspace:WaitForChild("Ground"):WaitForChild("GoCraft")
+        firetouchinterest(root, targetPart, 0) -- touch began
+        firetouchinterest(root, targetPart, 1) -- touch ended
+    end,
+})
+
+local Button = Tab:CreateButton({
+    Name = "Go to Mineshaft",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local root = char:WaitForChild("HumanoidRootPart")
+        local targetPart = workspace:WaitForChild("Ground"):WaitForChild("GoMine")
+        firetouchinterest(root, targetPart, 0) -- touch began
+        firetouchinterest(root, targetPart, 1) -- touch ended
+    end,
+})
+
+local Button = Tab:CreateButton({
+    Name = "Return to Base",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local root = char:WaitForChild("HumanoidRootPart")
+        local targetPart = workspace:WaitForChild("Ground"):WaitForChild("GoBack")
+        firetouchinterest(root, targetPart, 0) -- touch began
+        firetouchinterest(root, targetPart, 1) -- touch ended
+    end,
+})
+
+
+------------------------------------------------------------------------
+
 local Tab = Window:CreateTab("Weapons", 4483362458) -- Title, Image
 
 local Section = Tab:CreateSection("Weapons")
@@ -152,7 +194,17 @@ Section:Set("Weapons")
 local Button = Tab:CreateButton({
     Name = "Get Corrupted Rifle",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/CorruptedRifle", true))()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local root = char:WaitForChild("HumanoidRootPart")
+
+        root.CFrame = CFrame.new(targetPos)
+        task.wait(1)
+
+        local exitHead = game:GetService("Workspace"):WaitForChild("NightCity"):WaitForChild("Exit"):WaitForChild("Head")
+        firetouchinterest(root, exitHead, 0)
+        firetouchinterest(root, exitHead, 1)
     end,
 })
 
@@ -163,10 +215,30 @@ local Button = Tab:CreateButton({
         local LocalPlayer = Players.LocalPlayer
         local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local root = char:WaitForChild("HumanoidRootPart")
-        local targetHead = game:GetService("Workspace"):WaitForChild("DeadGround"):WaitForChild("LXD - 9999 Cell"):WaitForChild("Head")
-        firetouchinterest(root, targetHead, 0) -- touch began
-        firetouchinterest(root, targetHead, 1) -- touch ended
 
+        root.CFrame = CFrame.new(targetPos)
+        task.wait(1)
+
+        local targetHead = game:GetService("Workspace"):WaitForChild("DeadGround"):WaitForChild("LXD - 9999 Cell"):WaitForChild("Head")
+        firetouchinterest(root, targetHead, 0)
+        firetouchinterest(root, targetHead, 1)
+    end,
+})
+
+local Button = Tab:CreateButton({
+    Name = "Get LXW",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local root = char:WaitForChild("HumanoidRootPart")
+
+        root.CFrame = CFrame.new(targetPos)
+        task.wait(1)
+
+        local targetPart = game:GetService("Workspace"):WaitForChild("Exit")
+        firetouchinterest(root, targetPart, 0)
+        firetouchinterest(root, targetPart, 1)
     end,
 })
 
@@ -177,9 +249,64 @@ local Button = Tab:CreateButton({
         local LocalPlayer = Players.LocalPlayer
         local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local root = char:WaitForChild("HumanoidRootPart")
+
+        root.CFrame = CFrame.new(targetPos)
+        task.wait(1)
+
         local targetHead = game:GetService("Workspace"):WaitForChild("MazeWorld"):WaitForChild("ESCAPE FROM THIS HELL"):WaitForChild("Head")
-        firetouchinterest(root, targetHead, 0) -- touch began
-        firetouchinterest(root, targetHead, 1) -- touch ended
+        firetouchinterest(root, targetHead, 0)
+        firetouchinterest(root, targetHead, 1)
+    end,
+})
+
+local Button = Tab:CreateButton({
+    Name = "Get Crescendo",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local root = char:WaitForChild("HumanoidRootPart")
+
+        root.CFrame = CFrame.new(targetPos)
+        task.wait(1)
+
+        local targetPart = game:GetService("Workspace"):WaitForChild("GetCrescendo")
+        firetouchinterest(root, targetPart, 0)
+        firetouchinterest(root, targetPart, 1)
+    end,
+})
+
+local Button = Tab:CreateButton({
+    Name = "Get Vulcan",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local root = char:WaitForChild("HumanoidRootPart")
+
+        root.CFrame = CFrame.new(targetPos)
+        task.wait(1)
+
+        local targetPart = game:GetService("Workspace"):WaitForChild("LavaZone"):WaitForChild("Escape"):WaitForChild("Head")
+        firetouchinterest(root, targetPart, 0)
+        firetouchinterest(root, targetPart, 1)
+    end,
+})
+
+local Button = Tab:CreateButton({
+    Name = "Get Ice Crossbow",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local root = char:WaitForChild("HumanoidRootPart")
+
+        root.CFrame = CFrame.new(targetPos)
+        task.wait(1)
+
+        local targetPart = game:GetService("Workspace"):WaitForChild("IceZone"):WaitForChild("GetIceCrossbow"):WaitForChild("Head")
+        firetouchinterest(root, targetPart, 0)
+        firetouchinterest(root, targetPart, 1)
     end,
 })
 
@@ -190,11 +317,34 @@ local Button = Tab:CreateButton({
         local LocalPlayer = Players.LocalPlayer
         local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local root = char:WaitForChild("HumanoidRootPart")
-        local targetHead = game:GetService("Workspace"):WaitForChild("MazeWorld"):WaitForChild("ESCAPE FROM THIS HELL"):WaitForChild("Head")
-        firetouchinterest(root, targetHead, 0) -- touch began
-        firetouchinterest(root, targetHead, 1) -- touch ended
+
+        root.CFrame = CFrame.new(targetPos)
+        task.wait(1)
+
+        local targetPart = game:GetService("Workspace"):WaitForChild("CyberLand"):WaitForChild("GetMechGun")
+        firetouchinterest(root, targetPart, 0)
+        firetouchinterest(root, targetPart, 1)
     end,
 })
+
+local Button = Tab:CreateButton({
+    Name = "Get Red Missile Launcher",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local root = char:WaitForChild("HumanoidRootPart")
+
+        local targetPos = Vector3.new(624, 1090, 750.5)
+        root.CFrame = CFrame.new(targetPos)
+        task.wait(1)
+
+        local targetPart = game:GetService("Workspace"):WaitForChild("Floor 2"):WaitForChild("GetRedMissile"):WaitForChild("Head")
+        firetouchinterest(root, targetPart, 0) -- touch began
+        firetouchinterest(root, targetPart, 1) -- touch ended
+    end,
+})
+
 
 local Divider = Tab:CreateDivider()
 
