@@ -86,7 +86,8 @@ local function createGui()
         "God mode",
         "Reaper's Room",
         "Jack's Room",
-        "Portal"
+        "Portal",
+        "Get Corrupted Rifle"
     }
 
     local buttonUrls = {
@@ -103,7 +104,8 @@ local function createGui()
         "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/God%20Mode",
         "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/Reaper'sROOM",
         "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/Jack'sROOM",
-        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/Portal"
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/Portal",
+        "https://raw.githubusercontent.com/ukav/Folder/refs/heads/main/CorruptedRifle"
     }
 
     local buttons = {}
