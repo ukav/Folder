@@ -44,7 +44,6 @@ local targetNames = {
     ["Toxicle"] = true,
     ["004"] = true,
     ["Jengu"] = true,
-    ["Nightmare"] = true,
     ["Mannequin"] = true,
     ["Coal"] = true,
     ["Iron"] = true,
