@@ -122,6 +122,106 @@ local Button = Tab:CreateButton({
     end,
 })
 
+local Button = Tab:CreateButton({
+   Name = "Get Blizzard Armor",
+   Callback = function()
+       local Players = game:GetService("Players")
+       local LocalPlayer = Players.LocalPlayer
+       local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+       local root = char:WaitForChild("HumanoidRootPart")
+       local armorModel = workspace:WaitForChild("Misc"):WaitForChild("Blizzard Armor")
+       local headPart = armorModel:WaitForChild("Head")
+       headPart.CanCollide = false
+
+       while char and char.Parent do
+           firetouchinterest(headPart, root, 0)
+           task.wait()
+           firetouchinterest(headPart, root, 1)
+           task.wait()
+       end
+   end,
+})
+
+local Button = Tab:CreateButton({
+   Name = "Get Iron Armor",
+   Callback = function()
+       local Players = game:GetService("Players")
+       local LocalPlayer = Players.LocalPlayer
+       local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+       local root = char:WaitForChild("HumanoidRootPart")
+       local armorModel = workspace:WaitForChild("Misc"):WaitForChild("Iron Armor - 10 min Playtime")
+       local headPart = armorModel:WaitForChild("Head")
+       headPart.CanCollide = false
+
+       while char and char.Parent do
+           firetouchinterest(headPart, root, 0)
+           task.wait()
+           firetouchinterest(headPart, root, 1)
+           task.wait()
+       end
+   end,
+})
+
+local Button = Tab:CreateButton({
+   Name = "Get Silver Armor",
+   Callback = function()
+       local Players = game:GetService("Players")
+       local LocalPlayer = Players.LocalPlayer
+       local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+       local root = char:WaitForChild("HumanoidRootPart")
+       local armorModel = workspace:WaitForChild("Misc"):WaitForChild("Silver Armor - 15 min Playtime")
+       local headPart = armorModel:WaitForChild("Head")
+       headPart.CanCollide = false
+
+       while char and char.Parent do
+           firetouchinterest(headPart, root, 0)
+           task.wait()
+           firetouchinterest(headPart, root, 1)
+           task.wait()
+       end
+   end,
+})
+
+local Button = Tab:CreateButton({
+   Name = "Get Golden Armor",
+   Callback = function()
+       local Players = game:GetService("Players")
+       local LocalPlayer = Players.LocalPlayer
+       local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+       local root = char:WaitForChild("HumanoidRootPart")
+       local armorModel = workspace:WaitForChild("Misc"):WaitForChild("Golden Armor - 30 min Playtime")
+       local headPart = armorModel:WaitForChild("Head")
+       headPart.CanCollide = false
+
+       while char and char.Parent do
+           firetouchinterest(headPart, root, 0)
+           task.wait()
+           firetouchinterest(headPart, root, 1)
+           task.wait()
+       end
+   end,
+})
+
+local Button = Tab:CreateButton({
+   Name = "Get Diamond Armor",
+   Callback = function()
+       local Players = game:GetService("Players")
+       local LocalPlayer = Players.LocalPlayer
+       local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+       local root = char:WaitForChild("HumanoidRootPart")
+       local armorModel = workspace:WaitForChild("Misc"):WaitForChild("Diamond Armor - 60 min Playtime")
+       local headPart = armorModel:WaitForChild("Head")
+       headPart.CanCollide = false
+
+       while char and char.Parent do
+           firetouchinterest(headPart, root, 0)
+           task.wait()
+           firetouchinterest(headPart, root, 1)
+           task.wait()
+       end
+   end,
+})
+
 local Divider = Tab:CreateDivider()
 
 ------------------------------------------------------------------------
