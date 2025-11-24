@@ -133,26 +133,6 @@ local Section = Tab:CreateSection("Weapons")
 Section:Set("Weapons -- Reset before getting each weapon")
 
 local Button = Tab:CreateButton({
-   Name = "Get RGB",
-   Callback = function()
-       local Players = game:GetService("Players")
-       local LocalPlayer = Players.LocalPlayer
-       local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-       local root = char:WaitForChild("HumanoidRootPart")
-       local targetPos = Vector3.new(624, 1090, 750.5)
-       root.CFrame = CFrame.new(targetPos)
-       task.wait(1.5)
-       local targetPart = workspace:WaitForChild("CorruptedZone"):WaitForChild("RGB - 9999 Cell"):WaitForChild("Head")
-       while char and char.Parent do
-           firetouchinterest(targetPart, root, 0)
-           task.wait()
-           firetouchinterest(targetPart, root, 1)
-           task.wait()
-       end
-   end,
-})
-
-local Button = Tab:CreateButton({
     Name = "Get HEX Gun",
     Callback = function()
         local Players = game:GetService("Players")
@@ -397,6 +377,26 @@ local Divider = Tab:CreateDivider()
 local Section = Tab:CreateSection("Weapons")
 
 Section:Set("Event Weapons -- Reset before getting each weapon")
+
+local Button = Tab:CreateButton({
+   Name = "Get RGB",
+   Callback = function()
+       local Players = game:GetService("Players")
+       local LocalPlayer = Players.LocalPlayer
+       local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+       local root = char:WaitForChild("HumanoidRootPart")
+       local targetPos = Vector3.new(624, 1090, 750.5)
+       root.CFrame = CFrame.new(targetPos)
+       task.wait(1.5)
+       local targetPart = workspace:WaitForChild("CorruptedZone"):WaitForChild("RGB - 9999 Cell"):WaitForChild("Head")
+       while char and char.Parent do
+           firetouchinterest(targetPart, root, 0)
+           task.wait()
+           firetouchinterest(targetPart, root, 1)
+           task.wait()
+       end
+   end,
+})
 
 local Button = Tab:CreateButton({
    Name = "Get Scarecrow's Skull",
