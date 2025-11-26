@@ -44,11 +44,10 @@ local targetNames = {
     ["Toxicle"] = true,
     ["004"] = true,
     ["Jengu"] = true,
-    ["Mannequin"] = true,
     ["Coal"] = true,
     ["Iron"] = true,
     ["Gold"] = true,
-    ["Diamond"] = true
+    ["Diamond"] = true,
 }
 
 local wantedGuns = {
