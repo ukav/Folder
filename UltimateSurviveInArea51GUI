@@ -502,7 +502,7 @@ local Button = Tab:CreateButton({
         root.CFrame = CFrame.new(targetPos)
         task.wait(1.5)
 
-        local targetHead = game:GetService("Workspace"):WaitForChild("MazeWorld"):WaitForChild("ESCAPE FROM THIS HELL"):WaitForChild("Head")
+        local targetHead = game:GetService("Workspace").MazeWorld["ESCAPE FROM THIS HELL"].Head
         firetouchinterest(root, targetHead, 0)
         firetouchinterest(root, targetHead, 1)
     end,
