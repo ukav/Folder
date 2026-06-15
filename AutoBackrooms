@@ -8,25 +8,14 @@ local LocalPlayer = Players.LocalPlayer
 local camera = Workspace.CurrentCamera
 local PlayerGui = LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 5)
 
--- Define the Leader Username
 local LEADER_NAME = "EX6I"
 local isLeader = (LocalPlayer.Name == LEADER_NAME)
 
--- Boss 1 Configuration
-local BOSS1_MIN_X, BOSS1_MAX_X = -3156, -2976
-local BOSS1_MIN_Y, BOSS1_MAX_Y = 1609, 1676
-local BOSS1_MIN_Z, BOSS1_MAX_Z = -526, -327
-local BOSS1_CHAR_POS = Vector3.new(-3001.42456, 1610.05737, -392.37854)
-local BOSS1_CAM_CFRAME = CFrame.new(-2959.20312, 1676.08655, -356.05780, 0.65214, -0.57390, 0.49533, 0.00000, 0.65338, 0.75703, -0.75809, -0.49369, 0.42610)
+local SCAN_RADIUS = 100
 
--- Boss 2 Configuration
-local BOSS2_MIN_X, BOSS2_MAX_X = -2697, -2496
-local BOSS2_MIN_Y, BOSS2_MAX_Y = 1610, 1675
-local BOSS2_MIN_Z, BOSS2_MAX_Z = -719, -518
+local BOSS1_CHAR_POS = Vector3.new(-4606, 1610, 284)
 local BOSS2_CHAR_POS = Vector3.new(-2546.02808, 1610.05737, -586.07019)
-local BOSS2_CAM_CFRAME = CFrame.new(-2498.36719, 1678.08875, -557.48529, 0.51434, -0.65817, 0.54979, 0.00000, 0.64109, 0.76747, -0.85759, -0.39474, 0.32974)
 
--- Clean up old GUI instances
 if PlayerGui:FindFirstChild("ArenaControlCenter") then
     PlayerGui.ArenaControlCenter:Destroy()
 end
@@ -34,6 +23,7 @@ end
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ArenaControlCenter"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.Enabled = true
 ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
@@ -44,7 +34,7 @@ MainFrame.BorderSizePixel = 0
 MainFrame.Position = UDim2.new(0, 20, 1, -150)
 MainFrame.Size = UDim2.new(0, 240, 0, 130)
 MainFrame.Active = true
-MainFrame.Draggable = true 
+MainFrame.Draggable = true
 
 local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 9)
@@ -100,17 +90,23 @@ Container.BackgroundTransparency = 1
 Container.Position = UDim2.new(0, 0, 0, 32)
 Container.Size = UDim2.new(1, 0, 1, -32)
 
--- Global runtime variables
 local boss1Running = false
 local boss2Running = false
 local followModeRunning = false
+local hiddenGUIS = {}
+local guisHidden = false
 
 local ToggleBtn1, ToggleBtn2, DelayInput1, DelayInput2
 local FollowToggleBtn, FollowStatusLabel
 
--- Setup contextual interfaces
+local function FindInTable(tbl, val)
+    for _, v in pairs(tbl) do
+        if v == val then return true end
+    end
+    return false
+end
+
 if isLeader then
-    -- LEADER INTERFACE GENERATION
     local Row1 = Instance.new("Frame")
     Row1.Name = "Boss1Row"
     Row1.Parent = Container
@@ -189,7 +185,6 @@ if isLeader then
     ToggleBtn2.TextSize = 12
     Instance.new("UICorner", ToggleBtn2).CornerRadius = UDim.new(0, 6)
 else
-    -- ALTS FOLLOWER INTERFACE GENERATION
     local FollowRow = Instance.new("Frame")
     FollowRow.Name = "FollowRow"
     FollowRow.Parent = Container
@@ -219,22 +214,61 @@ else
     Instance.new("UICorner", FollowToggleBtn).CornerRadius = UDim.new(0, 6)
 end
 
--- Input Utility Functions
+local function hideGameGUIs()
+    if guisHidden then return end
+    guisHidden = true
+    for _, v in pairs(PlayerGui:GetDescendants()) do
+        if v:IsDescendantOf(ScreenGui) then continue end
+        if (v:IsA("Frame") or v:IsA("ImageLabel") or v:IsA("ScrollingFrame")) and v.Visible then
+            v.Visible = false
+            if not FindInTable(hiddenGUIS, v) then
+                table.insert(hiddenGUIS, v)
+            end
+        end
+    end
+end
+
+local function restoreGameGUIs()
+    for _, v in pairs(hiddenGUIS) do
+        if v and typeof(v) == "Instance" then
+            v.Visible = true
+        end
+    end
+    table.clear(hiddenGUIS)
+    guisHidden = false
+end
+
+local function triggerBackroomsTeleport()
+    local character = LocalPlayer.Character
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+
+    local things = Workspace:FindFirstChild("__THINGS")
+    local instances = things and things:FindFirstChild("Instances")
+    local backrooms = instances and instances:FindFirstChild("Backrooms")
+    local teleports = backrooms and backrooms:FindFirstChild("Teleports")
+    local enterPad = teleports and teleports:FindFirstChild("Enter")
+
+    if rootPart and enterPad and firetouchinterest then
+        firetouchinterest(rootPart, enterPad, 0)
+        task.wait(0.02)
+        firetouchinterest(rootPart, enterPad, 1)
+    end
+end
+
 local function simulateClick(screenX, screenY)
     VirtualInputManager:SendMouseButtonEvent(screenX, screenY, 0, true, game, 0)
-    task.wait(0.01)
+    task.wait(0.05)
     VirtualInputManager:SendMouseButtonEvent(screenX, screenY, 0, false, game, 0)
 end
 
-local function anyTargetsInArea(minX, maxX, minY, maxY, minZ, maxZ)
+local function anyTargetsInRadius(centerPos)
     local things = Workspace:FindFirstChild("__THINGS")
     local breakables = things and things:FindFirstChild("Breakables")
     if not breakables then return false end
 
     for _, desc in ipairs(breakables:GetDescendants()) do
         if desc:IsA("BasePart") and desc.Name == "Hitbox" then
-            local pos = desc.Position
-            if (pos.X >= minX and pos.X <= maxX) and (pos.Y >= minY and pos.Y <= maxY) and (pos.Z >= minZ and pos.Z <= maxZ) then
+            if (desc.Position - centerPos).Magnitude <= SCAN_RADIUS then
                 return true
             end
         end
@@ -242,7 +276,7 @@ local function anyTargetsInArea(minX, maxX, minY, maxY, minZ, maxZ)
     return false
 end
 
-local function attackArena(minX, maxX, minY, maxY, minZ, maxZ)
+local function attackArenaRadius(centerPos)
     local things = Workspace:FindFirstChild("__THINGS")
     local breakables = things and things:FindFirstChild("Breakables")
     if not breakables then return end
@@ -252,8 +286,7 @@ local function attackArena(minX, maxX, minY, maxY, minZ, maxZ)
 
     for _, desc in ipairs(breakables:GetDescendants()) do
         if desc:IsA("BasePart") and desc.Name == "Hitbox" then
-            local pos = desc.Position
-            if (pos.X >= minX and pos.X <= maxX) and (pos.Y >= minY and pos.Y <= maxY) and (pos.Z >= minZ and pos.Z <= maxZ) then
+            if (desc.Position - centerPos).Magnitude <= SCAN_RADIUS then
                 local sz = desc.Size
                 local volume = sz.X * sz.Y * sz.Z
                 if desc.Parent and desc.Parent.Name == "1" then
@@ -279,7 +312,6 @@ local function attackArena(minX, maxX, minY, maxY, minZ, maxZ)
     end
 end
 
--- Menu state updates
 local function updateUI1(state)
     if not ToggleBtn1 then return end
     if state then
@@ -302,9 +334,6 @@ local function updateUI2(state)
     end
 end
 
------------------------------------------
--- LEADER FUNCTIONAL LOOPS (ex6i)
------------------------------------------
 if isLeader then
     task.spawn(function()
         while ScreenGui.Parent do
@@ -312,14 +341,12 @@ if isLeader then
                 local character = LocalPlayer.Character
                 local rootPart = character and character:FindFirstChild("HumanoidRootPart")
                 if rootPart then rootPart.CFrame = CFrame.new(BOSS1_CHAR_POS) end
-                camera.CameraType = Enum.CameraType.Scriptable
-                camera.CFrame = BOSS1_CAM_CFRAME
+                camera.FieldOfView = 120
             elseif boss2Running and not boss1Running then
                 local character = LocalPlayer.Character
                 local rootPart = character and character:FindFirstChild("HumanoidRootPart")
                 if rootPart then rootPart.CFrame = CFrame.new(BOSS2_CHAR_POS) end
-                camera.CameraType = Enum.CameraType.Scriptable
-                camera.CFrame = BOSS2_CAM_CFRAME
+                camera.FieldOfView = 120
             end
             task.wait()
         end
@@ -328,8 +355,8 @@ if isLeader then
     task.spawn(function()
         while ScreenGui.Parent do
             if boss1Running then
-                if not anyTargetsInArea(BOSS1_MIN_X, BOSS1_MAX_X, BOSS1_MIN_Y, BOSS1_MAX_Y, BOSS1_MIN_Z, BOSS1_MAX_Z) then
-                    if anyTargetsInArea(BOSS2_MIN_X, BOSS2_MAX_X, BOSS2_MIN_Y, BOSS2_MAX_Y, BOSS2_MIN_Z, BOSS2_MAX_Z) then
+                if not anyTargetsInRadius(BOSS1_CHAR_POS) then
+                    if anyTargetsInRadius(BOSS2_CHAR_POS) then
                         boss1Running = false
                         boss2Running = true
                         updateUI1(false)
@@ -338,12 +365,12 @@ if isLeader then
                         continue
                     end
                 end
-                attackArena(BOSS1_MIN_X, BOSS1_MAX_X, BOSS1_MIN_Y, BOSS1_MAX_Y, BOSS1_MIN_Z, BOSS1_MAX_Z)
+                attackArenaRadius(BOSS1_CHAR_POS)
                 local currentDelay = tonumber(DelayInput1.Text) or 0
                 if currentDelay <= 0 then task.wait() else task.wait(currentDelay) end
             elseif boss2Running then
-                if not anyTargetsInArea(BOSS2_MIN_X, BOSS2_MAX_X, BOSS2_MIN_Y, BOSS2_MAX_Y, BOSS2_MIN_Z, BOSS2_MAX_Z) then
-                    if anyTargetsInArea(BOSS1_MIN_X, BOSS1_MAX_X, BOSS1_MIN_Y, BOSS1_MAX_Y, BOSS1_MIN_Z, BOSS1_MAX_Z) then
+                if not anyTargetsInRadius(BOSS2_CHAR_POS) then
+                    if anyTargetsInRadius(BOSS1_CHAR_POS) then
                         boss2Running = false
                         boss1Running = true
                         updateUI2(false)
@@ -352,7 +379,7 @@ if isLeader then
                         continue
                     end
                 end
-                attackArena(BOSS2_MIN_X, BOSS2_MAX_X, BOSS2_MIN_Y, BOSS2_MAX_Y, BOSS2_MIN_Z, BOSS2_MAX_Z)
+                attackArenaRadius(BOSS2_CHAR_POS)
                 local currentDelay = tonumber(DelayInput2.Text) or 0
                 if currentDelay <= 0 then task.wait() else task.wait(currentDelay) end
             else
@@ -370,9 +397,13 @@ if isLeader then
             boss2Running = false
             updateUI2(false)
             updateUI1(true)
+            hideGameGUIs()
         else
             updateUI1(false)
-            if not boss2Running then camera.CameraType = Enum.CameraType.Custom end
+            if not boss2Running then
+                camera.FieldOfView = 70
+                restoreGameGUIs()
+            end
         end
         task.wait(0.3)
         debounce1 = false
@@ -386,18 +417,19 @@ if isLeader then
             boss1Running = false
             updateUI1(false)
             updateUI2(true)
+            hideGameGUIs()
         else
             updateUI2(false)
-            if not boss1Running then camera.CameraType = Enum.CameraType.Custom end
+            if not boss1Running then
+                camera.FieldOfView = 70
+                restoreGameGUIs()
+            end
         end
         task.wait(0.3)
         debounce2 = false
     end)
 end
 
------------------------------------------
--- ALT FOLLOWER FUNCTIONAL LOOPS
------------------------------------------
 if not isLeader then
     task.spawn(function()
         while ScreenGui.Parent do
@@ -405,46 +437,36 @@ if not isLeader then
                 local leaderPlayer = Players:FindFirstChild(LEADER_NAME)
                 local leaderChar = leaderPlayer and leaderPlayer.Character
                 local leaderRoot = leaderChar and leaderChar:FindFirstChild("HumanoidRootPart")
-                
+
                 local character = LocalPlayer.Character
                 local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-                
+
                 if leaderRoot and rootPart then
                     local leaderPos = leaderRoot.Position
-                    
-                    -- Check if Leader is inside Boss 1 Room bounds
-                    if (leaderPos.X >= BOSS1_MIN_X and leaderPos.X <= BOSS1_MAX_X) and 
-                       (leaderPos.Z >= BOSS1_MIN_Z and leaderPos.Z <= BOSS1_MAX_Z) then
-                        
-                        -- FIXED: Force Alts directly to the hardcoded CHAR_POS constants
+
+                    if (leaderPos - BOSS1_CHAR_POS).Magnitude <= SCAN_RADIUS then
                         rootPart.CFrame = CFrame.new(BOSS1_CHAR_POS)
-                        camera.CameraType = Enum.CameraType.Scriptable
-                        camera.CFrame = BOSS1_CAM_CFRAME
-                        
-                        FollowStatusLabel.Text = "Status: Locked to Boss 1 Coordinates"
-                        attackArena(BOSS1_MIN_X, BOSS1_MAX_X, BOSS1_MIN_Y, BOSS1_MAX_Y, BOSS1_MIN_Z, BOSS1_MAX_Z)
-                        
-                    -- Check if Leader is inside Boss 2 Room bounds
-                    elseif (leaderPos.X >= BOSS2_MIN_X and leaderPos.X <= BOSS2_MAX_X) and 
-                           (leaderPos.Z >= BOSS2_MIN_Z and leaderPos.Z <= BOSS2_MAX_Z) then
-                        
-                        -- FIXED: Force Alts directly to the hardcoded CHAR_POS constants
+                        camera.FieldOfView = 120
+                        FollowStatusLabel.Text = "Status: Locked to Boss 1 Room"
+                        attackArenaRadius(BOSS1_CHAR_POS)
+
+                    elseif (leaderPos - BOSS2_CHAR_POS).Magnitude <= SCAN_RADIUS then
                         rootPart.CFrame = CFrame.new(BOSS2_CHAR_POS)
-                        camera.CameraType = Enum.CameraType.Scriptable
-                        camera.CFrame = BOSS2_CAM_CFRAME
-                        
-                        FollowStatusLabel.Text = "Status: Locked to Boss 2 Coordinates"
-                        attackArena(BOSS2_MIN_X, BOSS2_MAX_X, BOSS2_MIN_Y, BOSS2_MAX_Y, BOSS2_MIN_Z, BOSS2_MAX_Z)
+                        camera.FieldOfView = 120
+                        FollowStatusLabel.Text = "Status: Locked to Boss 2 Room"
+                        attackArenaRadius(BOSS2_CHAR_POS)
                     else
-                        -- If leader isn't farming or is out of bounds, alts just chill and wait
-                        camera.CameraType = Enum.CameraType.Custom
-                        FollowStatusLabel.Text = "Status: Idle (Leader out of farm rooms)"
+                        camera.FieldOfView = 70
+                        FollowStatusLabel.Text = "Status: Idle (Leader out of bounds)"
+                        restoreGameGUIs()
                     end
                 else
                     FollowStatusLabel.Text = "Status: Scanning for " .. LEADER_NAME .. "..."
                 end
+            else
+                task.wait(0.1)
             end
-            task.wait() -- Fast zero lag execution mapping frame updates
+            task.wait()
         end
     end)
 
@@ -452,26 +474,25 @@ if not isLeader then
     FollowToggleBtn.MouseButton1Click:Connect(function()
         if followDebounce then return end
         followDebounce = true
-        
+
         followModeRunning = not followModeRunning
         if followModeRunning then
             TweenService:Create(FollowToggleBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(45, 175, 85)}):Play()
             FollowToggleBtn.Text = "FOLLOW MODE: ON"
+            hideGameGUIs()
         else
             TweenService:Create(FollowToggleBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(210, 55, 55)}):Play()
             FollowToggleBtn.Text = "FOLLOW MODE: OFF"
             FollowStatusLabel.Text = "Target: " .. LEADER_NAME .. " (Idle)"
-            camera.CameraType = Enum.CameraType.Custom
+            camera.FieldOfView = 70
+            restoreGameGUIs()
         end
-        
+
         task.wait(0.3)
         followDebounce = false
     end)
 end
 
------------------------------------------
--- GLOBAL SHUTDOWNS & BIND CONTROL
------------------------------------------
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
     if gameProcessedEvent then return end
     if input.KeyCode == Enum.KeyCode.C then
@@ -485,7 +506,8 @@ UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
             FollowToggleBtn.Text = "FOLLOW MODE: OFF"
             FollowStatusLabel.Text = "Target: " .. LEADER_NAME .. " (Stopped)"
         end
-        camera.CameraType = Enum.CameraType.Custom
+        camera.FieldOfView = 70
+        restoreGameGUIs()
     end
 end)
 
@@ -493,7 +515,8 @@ CloseBtn.MouseButton1Click:Connect(function()
     boss1Running = false
     boss2Running = false
     followModeRunning = false
-    camera.CameraType = Enum.CameraType.Custom
+    camera.FieldOfView = 70
+    restoreGameGUIs()
     ScreenGui:Destroy()
 end)
 
@@ -501,5 +524,8 @@ ScreenGui.Destroying:Connect(function()
     boss1Running = false
     boss2Running = false
     followModeRunning = false
-    camera.CameraType = Enum.CameraType.Custom
+    camera.FieldOfView = 70
+    restoreGameGUIs()
 end)
+
+triggerBackroomsTeleport()
